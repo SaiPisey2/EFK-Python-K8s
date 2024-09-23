@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-app-deploy
+  labels:
+    app: python-app
+    app.kubernetes.io/name: python-app-deploy
+  namespace: python-efk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-app
+  template:
+    metadata:
+      labels:
+        app: python-app
+    spec:
+      # priorityClassName: sherlock-dev-priority-class
+      # topologySpreadConstraints:
+      # - maxSkew: 1
+      #   topologyKey: kubernetes.io/hostname
+      #   whenUnsatisfiable: ScheduleAnyway
+      #   labelSelector:
+      #     matchLabels:
+      #       app: python-app
+      containers:
+      - name: python-app
+        image: spisey/python-efk:02
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5001
+        readinessProbe:
+          exec:
+            command:
+            - ls
+          initialDelaySeconds: 10
+        volumeMounts:
+        # - name: pv-backend
+        #   mountPath: "/app/logs/"
+        - mountPath: "/app/logs/"
+          name: log-volume
+        resources:
+          limits:
+            cpu: 350m
+            memory: 120Mi
+          requests:
+            cpu: 60m
+            memory: 100Mi
+        # securityContext:
+        #   allowPrivilegeEscalation: false 
+        #   seccompProfile:
+        #     type: RuntimeDefault
+        #   seLinuxOptions:
+        #     level: "s0:c123,c456"
+        #   capabilities:
+        #     drop:
+        #       - all
+      volumes:
+      # - name: pv-backend
+      #   persistentVolumeClaim:
+      #     claimName: pvc-python-app
+      - name: log-volume
+        hostPath:
+          path: /var/log/webapp
+          type: DirectoryOrCreate
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #       - matchExpressions:
+      #         - key: key4
+      #           operator: In
+      #           values:
+      #           - value4
+      #       - matchExpressions:
+      #         - key: key5
+      #           operator: In
+      #           values:
+      #           - value5

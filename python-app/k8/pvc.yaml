@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-python-app
+  namespace: python-efk
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: "" # Leave as empty string for static provisioning
+  resources:
+    requests:
+      storage: 5Gi
